@@ -22,7 +22,7 @@ public class FireBaseRankingManager : MonoBehaviour
 
     [Header("New Data")] 
     public PlayerData currentPlayerData;
-    private List<PlayerData> sortPlayerDatas = new List<PlayerData>();
+    private List<PlayerData> sortPlayerData = new List<PlayerData>();
 
 
     /*#region MyRegion
@@ -123,7 +123,7 @@ public class FireBaseRankingManager : MonoBehaviour
 
     public void ReloadSortingData()
     {
-        string urlData = $"{url}Ranking/playerDatas.json?auth={secret}";
+        string urlData = $"{url}Ranking/playerData.json?auth={secret}";
 
         RestClient.Get(urlData).Then(response =>
         {
@@ -135,7 +135,7 @@ public class FireBaseRankingManager : MonoBehaviour
 
             for (int i = 0; i < jsonNode.Count; i++)
             {
-                ranking.playerData.Add(new PlayerData(jsonNode[i]["rankNumber"], null, jsonNode[i]["rankNumber"],
+                ranking.playerData.Add(new PlayerData(jsonNode[i]["playerName"], null, jsonNode[i]["rankNumber"],
                     jsonNode[i]["playerScore"]));
             }
 
@@ -161,7 +161,7 @@ public class FireBaseRankingManager : MonoBehaviour
     
     public void AddDataWithSorting()
     {
-        string urlData = $"{url}Ranking/playerDatas.json?auth={secret}";
+        string urlData = $"{url}Ranking/playerData.json?auth={secret}";
 
         RestClient.Get(urlData).Then(response =>
         {
@@ -173,7 +173,7 @@ public class FireBaseRankingManager : MonoBehaviour
 
             for (int i = 0; i < jsonNode.Count; i++)
             {
-                ranking.playerData.Add(new PlayerData(jsonNode[i]["rankNumber"],null,jsonNode[i]["rankNumber"],jsonNode[i]["playerScore"]));
+                ranking.playerData.Add(new PlayerData(jsonNode[i]["playerName"],null,jsonNode[i]["rankNumber"],jsonNode[i]["playerScore"]));
             }
 
             PlayerData checkPlayerData =
