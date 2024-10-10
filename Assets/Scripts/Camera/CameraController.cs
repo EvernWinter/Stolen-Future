@@ -1,39 +1,31 @@
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    [SerializeField] private BoxCollider2D boundBox; // Assign the bounding box in the Inspector
-    private Camera cam;
-    private float camHalfHeight;
-    private float camHalfWidth;
-
-    private void Start()
+    public CinemachineVirtualCamera virtualCamera; // Assign your virtual camera here
+    public float startZoom = 2f; // Starting zoom value
+    public float endZoom = 5f; // End zoom value
+    public float duration = 2f; // Duration of the zoom
+    
+    private float timer = 0f;
+    
+    void Start()
     {
-        cam = Camera.main;
-        camHalfHeight = cam.orthographicSize;
-        camHalfWidth = camHalfHeight * cam.aspect;
+        // Set initial zoom
+        virtualCamera.m_Lens.OrthographicSize = startZoom;
     }
-
-    private void LateUpdate()
+    
+    void Update()
     {
-        // Get the camera's current position
-        Vector3 newPosition = transform.position;
-
-        // Calculate the bounds of the bounding box
-        Bounds bounds = boundBox.bounds;
-
-        // Clamp the camera position so it doesn't exceed the bounds
-        float minX = bounds.min.x + camHalfWidth;
-        float maxX = bounds.max.x - camHalfWidth;
-        float minY = bounds.min.y + camHalfHeight;
-        float maxY = bounds.max.y - camHalfHeight;
-
-        newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
-        newPosition.y = Mathf.Clamp(newPosition.y, minY, maxY);
-
-        // Apply the clamped position to the camera
-        transform.position = newPosition;
+        // Increase the timer based on the time passed
+        if (timer < duration)
+        {
+            timer += Time.deltaTime;
+            float t = timer / duration; // Normalize the time between 0 and 1
+            virtualCamera.m_Lens.OrthographicSize = Mathf.Lerp(startZoom, endZoom, t);
+        }
     }
 }

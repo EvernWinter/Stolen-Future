@@ -502,7 +502,7 @@ MonoBehaviour:
   moveSpeed: 5
   bulletPrefab: {fileID: 5866184308340187874, guid: 6bd30559982f4e6439c6ef4568109690, type: 3}
   shootingPosition: {fileID: 593316935}
-  shootingCooldown: 1
+  shootingCooldown: 0.5
 --- !u!1 &417081152
 GameObject:
   m_ObjectHideFlags: 0
@@ -719,7 +719,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b386fe7c4a3fb92419259e258d411b57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boundBox: {fileID: 0}
+  virtualCamera: {fileID: 0}
+  startZoom: 2
+  endZoom: 5
+  duration: 2
 --- !u!1 &592255380
 GameObject:
   m_ObjectHideFlags: 3
@@ -1322,6 +1325,7 @@ GameObject:
   - component: {fileID: 1919906268}
   - component: {fileID: 1919906267}
   - component: {fileID: 1919906269}
+  - component: {fileID: 1919906270}
   m_Layer: 0
   m_Name: Virtual Camera
   m_TagString: Untagged
@@ -1400,6 +1404,22 @@ MonoBehaviour:
   m_BoundingShape2D: {fileID: 1784645102}
   m_Damping: 0.5
   m_MaxWindowSize: -1
+--- !u!114 &1919906270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1919906266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b386fe7c4a3fb92419259e258d411b57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  virtualCamera: {fileID: 1919906267}
+  startZoom: 5
+  endZoom: 20
+  duration: 3
 --- !u!1001 &1600297149108821898
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1414,7 +1434,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8120040476693799833, guid: 6bd30559982f4e6439c6ef4568109690, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -6.48
+      value: -19.39
       objectReference: {fileID: 0}
     - target: {fileID: 8120040476693799833, guid: 6bd30559982f4e6439c6ef4568109690, type: 3}
       propertyPath: m_LocalPosition.y
