@@ -139,7 +139,7 @@ public class PlayerController : MonoBehaviour
         while (true) // Loop to continuously auto-shoot
         {
             Shoot();
-            Debug.Log("Shot fired!"); // Debug statement to confirm shooting
+            //Debug.Log("Shot fired!"); // Debug statement to confirm shooting
             yield return new WaitForSeconds(shootingCooldown); // Wait for the cooldown duration between shots
         }
     }
