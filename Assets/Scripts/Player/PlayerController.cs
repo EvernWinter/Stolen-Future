@@ -11,11 +11,14 @@ public class PlayerController : MonoBehaviour
    
     private Vector2 moveInput;
     private Vector2 touchPosition;
+    
+    
    
     [Header("Flying")]
     [SerializeField] private Sprite[] flyingSprites;
     [SerializeField] private float animationSpeed = 0.1f;
     private SpriteRenderer spriteRenderer;
+    public bool canMove;
     private bool isAnimating; // Flag to check if animation is already running
 
     public float moveSpeed = 5f;
@@ -45,6 +48,7 @@ public class PlayerController : MonoBehaviour
    
     void Start()
     {
+        canMove = false;
         spriteRenderer = GetComponent<SpriteRenderer>();
        
         // Start the flying animation once, if not already animating
@@ -55,6 +59,8 @@ public class PlayerController : MonoBehaviour
 
         // Start auto-shooting
         StartCoroutine(AutoShoot());
+        
+        StartCoroutine(EnableMovementAfterDelay(3f));
     }
 
     private void OnEnable()
@@ -73,12 +79,16 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // Handle movement for both PC and mobile
-        MovePlayer();
+        // Handle movement for both PC and mobile.
+        if (canMove)
+        {
+            MovePlayer();
+        }
     }
 
     private void MovePlayer()
     {
+        
         // If on mobile (touch input)
         if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
         {
@@ -142,6 +152,12 @@ public class PlayerController : MonoBehaviour
             //Debug.Log("Shot fired!"); // Debug statement to confirm shooting
             yield return new WaitForSeconds(shootingCooldown); // Wait for the cooldown duration between shots
         }
+    }
+    
+    private IEnumerator EnableMovementAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay); // Wait for the specified delay
+        canMove = true; // Enable movement after the delay
     }
     
     

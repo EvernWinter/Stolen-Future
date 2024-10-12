@@ -712,6 +712,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: b7643d74ce1c7d14b8bcd4a9c4a93d86, type: 3}
   - {fileID: 21300000, guid: e1e3572087477154a8c8edc1a5f06b51, type: 3}
   animationSpeed: 0.1
+  canMove: 0
   moveSpeed: 5
   bulletPrefab: {fileID: 5866184308340187874, guid: 6bd30559982f4e6439c6ef4568109690, type: 3}
   shootingPosition: {fileID: 593316935}
