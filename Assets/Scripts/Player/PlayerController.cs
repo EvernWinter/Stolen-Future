@@ -48,9 +48,9 @@ public class PlayerController : MonoBehaviour
    
     void Start()
     {
-        canMove = false;
+        canMove = false; // Disable movement initially
         spriteRenderer = GetComponent<SpriteRenderer>();
-       
+    
         // Start the flying animation once, if not already animating
         if (!isAnimating)
         {
@@ -59,7 +59,8 @@ public class PlayerController : MonoBehaviour
 
         // Start auto-shooting
         StartCoroutine(AutoShoot());
-        
+    
+        // Delay movement enablement
         StartCoroutine(EnableMovementAfterDelay(3f));
     }
 
@@ -157,8 +158,14 @@ public class PlayerController : MonoBehaviour
     private IEnumerator EnableMovementAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay); // Wait for the specified delay
-        canMove = true; // Enable movement after the delay
-    }
+        canMove = true; // Allow player movement
     
+        // Inform the GameManager that movement is now allowed
+        GameManager gameManager = FindObjectOfType<GameManager>();
+        if (gameManager != null)
+        {
+            gameManager.EnableMovement(); // Allow movement from the GameManager side
+        }
+    }
     
 }
