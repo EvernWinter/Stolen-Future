@@ -19,12 +19,17 @@ public abstract class Entity : MonoBehaviour
     
     [Header("Property")]
     [SerializeField] protected int health = 100;
+    public int Health { get { return health; } }
+    
     [SerializeField] protected int maxHealth = 100;
+    public int MaxHealth { get { return maxHealth; } }
+    
     [SerializeField] protected EntityType entityType;
 
     protected virtual void Awake()
     {
         health = maxHealth;
+        
     }
 
     protected virtual void Shoot(BulletType type)

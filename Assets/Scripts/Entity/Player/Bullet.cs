@@ -26,7 +26,7 @@ public class Bullet : MonoBehaviour
     public void SetDirection(Vector2 direction)
     {
         rb.velocity = direction.normalized * bulletSpeed;
-        Debug.Log("Bullet direction set to: " + rb.velocity); // Debug to confirm velocity
+        //Debug.Log("Bullet direction set to: " + rb.velocity); // Debug to confirm velocity
     }
 
     private void OnTriggerEnter2D(Collider2D other)

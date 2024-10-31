@@ -10,6 +10,7 @@ public class EnemyManager : MonoBehaviour
     [SerializeField] private float spawnTimer = 0.0f; // Timer for spawning enemies
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private Transform[] endPoint;
+    [SerializeField] private GameObject player;
 
     private Dictionary<Transform, bool> endPointStatus;
 
@@ -62,10 +63,10 @@ public class EnemyManager : MonoBehaviour
         else
         {
             // Debug the status of all endpoints
-            foreach (var point in endPointStatus)
+            /*foreach (var point in endPointStatus)
             {
                 Debug.Log($"{point.Key.name} is {(point.Value ? "occupied" : "available")}");
-            }
+            }*/
         }
     }
 
@@ -85,8 +86,6 @@ public class EnemyManager : MonoBehaviour
     {
         endPointStatus[endpoint] = false; // Mark the endpoint as available
         enemyList.Remove(enemy); // Remove from tracking list
-        Debug.Log($"Endpoint {endpoint.name} releasedddddddddddddddddddddddddddddddddddddd"); // Debug message for released endpoint
-        
     }
 
     private void ReleaseEndpoints()

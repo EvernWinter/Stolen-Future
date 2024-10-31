@@ -6,9 +6,11 @@ public class Enemy : Entity
 {
     [SerializeField] public Transform target; // Endpoint to move towards
     [SerializeField] public Transform endTarget; // Not used in current code, consider removing if unnecessary
-    private EnemyManager enemyManager;
-    private bool stopMoving;
-    private Transform player; // Reference to the player's transform
+    [SerializeField] private EnemyManager enemyManager;
+    [SerializeField] private bool stopMoving;
+    [SerializeField] private GameObject playerObj;
+    [SerializeField] private Transform player; // Reference to the player's transform
+    [SerializeField] private bool foundPlayer;
     
 
     protected override void Awake()
@@ -20,7 +22,10 @@ public class Enemy : Entity
 
     void Start()
     {
-        StartCoroutine(AutoShoot(BulletType.Enemy));
+        playerObj = GameObject.FindGameObjectWithTag("Player");
+        
+        
+        
         
     }
 
@@ -32,6 +37,10 @@ public class Enemy : Entity
 
     void Update()
     {
+        if (foundPlayer)
+        {
+            StartCoroutine(AutoShoot(BulletType.Enemy));
+        }
         RotateToPlayer();
         if (!stopMoving)
         {
@@ -49,6 +58,12 @@ public class Enemy : Entity
 
     private void RotateToPlayer()
     {
+        if (playerObj == null)
+        {
+            Debug.LogWarning("Target is null. Cannot rotate enemy towards player.");
+            //Stop autoshoot here
+            return;
+        }
         // Cache the player's transform if not already cached
         if (player == null)
         {
@@ -66,6 +81,12 @@ public class Enemy : Entity
 
         // Smoothly rotate towards the target rotation around the Z-axis
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 200f * Time.deltaTime); // Adjust speed as necessary
+        
+        if (Quaternion.Angle(transform.rotation, targetRotation) < 0.1f) // Adjust threshold if needed
+        {
+            foundPlayer = true;
+            Debug.Log("Rotation complete. Player found.");
+        }
     }
 
     

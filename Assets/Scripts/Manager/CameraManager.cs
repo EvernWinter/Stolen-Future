@@ -23,21 +23,21 @@ public class CameraManager : MonoBehaviour
 
                 if (confiner == null)
                 {
-                    Debug.LogError("Cinemachine Confiner 2D component not found on the assigned GameObject!");
+                    //Debug.LogError("Cinemachine Confiner 2D component not found on the assigned GameObject!");
                 }
                 else
                 {
-                    Debug.Log("Cinemachine Confiner 2D found.");
+                    //Debug.Log("Cinemachine Confiner 2D found.");
                 }
             }
             else
             {
-                Debug.LogError("CinemachineVirtualCamera component not found on the assigned GameObject!");
+                //Debug.LogError("CinemachineVirtualCamera component not found on the assigned GameObject!");
             }
         }
         else
         {
-            Debug.LogError("Confiner GameObject is not assigned in the inspector.");
+            //Debug.LogError("Confiner GameObject is not assigned in the inspector.");
         }
     }
 
@@ -61,7 +61,7 @@ public class CameraManager : MonoBehaviour
         if (confiner != null && bound != null)
         {
             confiner.InvalidateCache(); // Refresh the confiner path
-            Debug.Log("Confiner bounds updated on scene load.");
+            //Debug.Log("Confiner bounds updated on scene load.");
         }
     }
 
@@ -72,31 +72,31 @@ public class CameraManager : MonoBehaviour
         if (confiner != null && bound != null)
         {
             confiner.m_BoundingShape2D = bound; // Set the bounding shape
-            Debug.Log("Confiner bounds setup after initial delay.");
+            //Debug.Log("Confiner bounds setup after initial delay.");
 
             for (int i = 0; i < 3; i++)
             {
                 // Set the max window size to -1
                 confiner.m_MaxWindowSize = -1f;
-                Debug.Log("MaxWindowSize set to -1f.");
+                //Debug.Log("MaxWindowSize set to -1f.");
 
                 // Wait for 0.5 seconds
                 yield return new WaitForSeconds(0.5f);
 
                 // Change max window size to 10f
                 confiner.m_MaxWindowSize = 1f;
-                Debug.Log("MaxWindowSize changed to 1f.");
+                //Debug.Log("MaxWindowSize changed to 1f.");
 
                 // Wait for another 0.5 seconds
                 yield return new WaitForSeconds(0.5f);
                 
                 confiner.m_MaxWindowSize = -1f;
-                Debug.Log("MaxWindowSize changed to -1f.");
+                //Debug.Log("MaxWindowSize changed to -1f.");
             }
         }
         else
         {
-            Debug.LogWarning("Cinemachine Confiner 2D or bounding shape is not assigned or found.");
+            //Debug.LogWarning("Cinemachine Confiner 2D or bounding shape is not assigned or found.");
         }
     }
 }
