@@ -79,13 +79,13 @@ namespace Microlight.MicroBar {
             // Add mouse interaction and draw hover glow 
             EditorGUIUtility.AddCursorRect(headerRectWithArrow, MouseCursor.Link);
             //if(Event.current.type == EventType.MouseMove && headerRectWithArrow.Contains(Event.current.mousePosition)) {
-            if(headerRectWithArrow.Contains(Event.current.mousePosition) ||
+            /*if(headerRectWithArrow.Contains(Event.current.mousePosition) ||
                 property.isExpanded) {
                 MicroEditor_DrawUtility.DrawContainer(headerRectWithArrow, DecideHeaderColor(property));  // Dont want glow effect
                 if(property.isExpanded) {
                     MicroEditor_DrawUtility.DrawContainerBottomOutline(headerRectWithArrow);
                 }
-            }
+            }*/
             property.isExpanded = EditorGUI.Foldout(headerRect, property.isExpanded, new GUIContent(HeaderName(property)), true);
 
             return new Rect(

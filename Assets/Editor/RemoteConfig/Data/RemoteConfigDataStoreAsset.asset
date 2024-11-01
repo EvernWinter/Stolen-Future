@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 469c24fdb3bd6431b92cc1465bd9166b, type: 3}
+  m_Name: RemoteConfigDataStoreAsset
+  m_EditorClassIdentifier: 
+  _rsKeyList: "[\r\n  {\r\n    \"metadata\": {\r\n      \"entityId\": \"968643ef-678a-4ad4-a2b6-843b22832a39\"\r\n   
+    },\r\n    \"rs\": {\r\n      \"key\": \"testIndex\",\r\n      \"type\": \"int\",\r\n     
+    \"value\": 0\r\n    }\r\n  },\r\n  {\r\n    \"metadata\": {\r\n      \"entityId\":
+    \"f86747f5-150e-488e-94c7-8d3ef1bd33c6\"\r\n    },\r\n    \"rs\": {\r\n     
+    \"key\": \"isEvent\",\r\n      \"type\": \"bool\",\r\n      \"value\": false\r\n   
+    }\r\n  }\r\n]"
+  _rsLastCachedKeyList: "[\r\n  {\r\n    \"metadata\": {\r\n      \"entityId\": \"968643ef-678a-4ad4-a2b6-843b22832a39\"\r\n   
+    },\r\n    \"rs\": {\r\n      \"key\": \"testIndex\",\r\n      \"type\": \"int\",\r\n     
+    \"value\": 0\r\n    }\r\n  },\r\n  {\r\n    \"metadata\": {\r\n      \"entityId\":
+    \"f86747f5-150e-488e-94c7-8d3ef1bd33c6\"\r\n    },\r\n    \"rs\": {\r\n     
+    \"key\": \"isEvent\",\r\n      \"type\": \"bool\",\r\n      \"value\": false\r\n   
+    }\r\n  }\r\n]"
+  _environments: "[\r\n  {\r\n    \"projectId\": \"f67fcfe9-817d-46fc-b0f9-83caa9103e09\",\r\n   
+    \"name\": \"production\",\r\n    \"id\": \"85fa27ab-707c-45ac-8c0a-166d0aaa9c15\",\r\n   
+    \"isDefault\": true,\r\n    \"createdAt\": \"2024-09-19T05:24:58Z\",\r\n    \"updatedAt\":
+    \"2024-09-19T05:24:58Z\"\r\n  },\r\n  {\r\n    \"projectId\": \"f67fcfe9-817d-46fc-b0f9-83caa9103e09\",\r\n   
+    \"name\": \"development\",\r\n    \"id\": \"b24ced3d-19ce-4c67-9df3-c93ddef265a0\",\r\n   
+    \"isDefault\": false,\r\n    \"createdAt\": \"2024-11-01T14:36:37Z\",\r\n   
+    \"updatedAt\": \"2024-11-01T14:36:37Z\"\r\n  }\r\n]"
