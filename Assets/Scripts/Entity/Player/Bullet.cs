@@ -11,7 +11,7 @@ public enum BulletType
 public class Bullet : MonoBehaviour
 {
     public float bulletSpeed = 10f; // Speed of the bullet
-    public int damage = 15; // Damage the bullet deals
+    public float damage = 15f; // Damage the bullet deals
     public BulletType bulletType;
     
 

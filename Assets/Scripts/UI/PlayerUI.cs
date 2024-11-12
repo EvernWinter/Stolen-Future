@@ -8,13 +8,8 @@ public class PlayerUI : MonoBehaviour
 {
     [Header("Prefabs")]
     [SerializeField] MicroBar healthBar;
-    [SerializeField] MicroBar levelBar;
+    [SerializeField] private MicroBar levelBar;
     
-    
-    
-    
-    
-
     public void Damage(float health) 
     {
         if (healthBar != null)
@@ -26,12 +21,12 @@ public class PlayerUI : MonoBehaviour
     public void Heal(float health) 
     {
         // Update HealthBar
-        //if(healthBar != null) healthBar.UpdateBar(health, false, UpdateAnim.Heal);
+        if(healthBar != null) healthBar.UpdateBar(health, false, UpdateAnim.Heal);
         
     }
     public void LevelUp(float level) 
     {
-        if(levelBar != null) levelBar.UpdateBar(level, false, UpdateAnim.Damage);
+        if(levelBar != null) levelBar.UpdateBar(level, false, UpdateAnim.Heal);
         
     }
 
@@ -39,6 +34,12 @@ public class PlayerUI : MonoBehaviour
     {
         Debug.Log($"Max : {maxHealth}");
         healthBar.Initialize(maxHealth);
+    }
+    
+    public void SetMaxLevel(float maxLevel)
+    {
+        Debug.Log($"Max level : {maxLevel}");
+        levelBar.Initialize(maxLevel);
     }
     
     // Start is called before the first frame update

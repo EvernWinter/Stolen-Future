@@ -131,10 +131,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 5866184308340187874, guid: 6bd30559982f4e6439c6ef4568109690, type: 3}
-  shootingPosition: {fileID: 577476551300111925}
-  shootingCooldown: 1
+  shootingPosition:
+  - {fileID: 577476551300111925}
+  shootingCooldown: 2.5
   health: 100
   maxHealth: 100
+  damage: 10
   entityType: 1
   target: {fileID: 0}
   endTarget: {fileID: 0}
@@ -143,6 +145,7 @@ MonoBehaviour:
   playerObj: {fileID: 0}
   player: {fileID: 0}
   foundPlayer: 0
+  point: 0
 --- !u!61 &6887726873867874985
 BoxCollider2D:
   m_ObjectHideFlags: 0

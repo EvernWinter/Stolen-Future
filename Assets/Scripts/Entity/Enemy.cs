@@ -11,20 +11,22 @@ public class Enemy : Entity
     [SerializeField] private GameObject playerObj;
     [SerializeField] private Transform player; // Reference to the player's transform
     [SerializeField] private bool foundPlayer;
+    [SerializeField] private float point;
     
 
     protected override void Awake()
     {
         base.Awake();
+        point = 3f;
         entityType = EntityType.Enemy;
         shootingCooldown = Random.Range(0.7f, 1.2f);
+       
     }
 
     void Start()
     {
         playerObj = GameObject.FindGameObjectWithTag("Player");
-        
-        
+        health = 100f + playerObj.GetComponent<PlayerController>().currentLevel * 10f;
         
         
     }
@@ -85,7 +87,7 @@ public class Enemy : Entity
         if (Quaternion.Angle(transform.rotation, targetRotation) < 0.1f) // Adjust threshold if needed
         {
             foundPlayer = true;
-            Debug.Log("Rotation complete. Player found.");
+            //Debug.Log("Rotation complete. Player found.");
         }
     }
 
@@ -99,6 +101,7 @@ public class Enemy : Entity
             enemyManager.ReleaseEndpoint(target, gameObject); // Release the endpoint when dying
         }
         Debug.Log("Enemy died and endpoint released"); // Debug message for enemy death
+        playerObj.GetComponent<PlayerController>().Leveling(point);
     }
     
 }

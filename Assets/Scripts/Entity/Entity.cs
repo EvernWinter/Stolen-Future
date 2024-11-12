@@ -13,16 +13,20 @@ public abstract class Entity : MonoBehaviour
 {
     [Header("Shooting")]
     [SerializeField] protected GameObject bulletPrefab;   // Bullet prefab to instantiate
-    [SerializeField] protected Transform shootingPosition; // Position from where to shoot
+    [SerializeField] protected List<Transform> shootingPosition; // Position from where to shoot
     [SerializeField] protected float shootingCooldown = 1f; // Cooldown between shots
+    public float ShootingCooldown { get { return shootingCooldown; } set { shootingCooldown = value; } }
     protected bool canShoot = true; // Flag to control shooting cooldown
     
     [Header("Property")]
-    [SerializeField] protected int health = 100;
-    public int Health { get { return health; } }
+    [SerializeField] protected float health = 100f;
+    public float Health { get { return health; } }
     
-    [SerializeField] protected int maxHealth = 100;
-    public int MaxHealth { get { return maxHealth; } }
+    [SerializeField] protected float maxHealth = 100f;
+    public float MaxHealth { get { return maxHealth; } set { maxHealth = value; } }
+    
+    [SerializeField] private float damage = 10f;
+    public float Damage { get { return damage; } set { damage = value; } }
     
     [SerializeField] protected EntityType entityType;
 
@@ -36,14 +40,18 @@ public abstract class Entity : MonoBehaviour
     {
         if (!canShoot || bulletPrefab == null || shootingPosition == null) return;
 
-        GameObject bullet = Instantiate(bulletPrefab, shootingPosition.position, shootingPosition.rotation);
-        bullet.GetComponent<Bullet>().bulletType = type;
-        Bullet bulletScript = bullet.GetComponent<Bullet>();
-        if (bulletScript != null)
+        foreach (var postion in shootingPosition)
         {
-            bulletScript.SetDirection(shootingPosition.up);
+            GameObject bullet = Instantiate(bulletPrefab, postion.position, postion.rotation);
+            bullet.GetComponent<Bullet>().bulletType = type;
+            bullet.GetComponent<Bullet>().damage = damage;
+            Bullet bulletScript = bullet.GetComponent<Bullet>();
+            if (bulletScript != null)
+            {
+                bulletScript.SetDirection(postion.up);
+            }
         }
-
+        
         StartCoroutine(ShootCooldown());
     }
     
@@ -63,7 +71,7 @@ public abstract class Entity : MonoBehaviour
         }
     }
 
-    public virtual void TakeDamage(int damage)
+    public virtual void TakeDamage(float damage)
     {
         if (health > 0)
         {

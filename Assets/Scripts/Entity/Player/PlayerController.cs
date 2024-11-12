@@ -14,35 +14,40 @@ public class PlayerController : Entity
     private Vector2 touchPosition;
     [SerializeField] private PlayerUI playerUI;
     
-    
-    
+    [Header("Reserve Shooting Position")]
+    [SerializeField] public List<Transform> reservePositions; 
    
     [Header("Flying")]
     [SerializeField] private Sprite[] flyingSprites;
     [SerializeField] private float animationSpeed = 0.1f;
     
-    [Header("Dashing")]
-    [SerializeField] private bool canDash = true;
+    [Header("Protected")]
+    [SerializeField] private bool canProtect = true;
     [SerializeField] private Rigidbody2D playerRb;
-    [SerializeField] private float dashingPower;
-    [SerializeField] private float dashingTime = 0.2f;
-    [SerializeField] private float dashingCoolDown = 1f;
-    [SerializeField] private bool isDashing = false;
+    [SerializeField] private float protectedTime = 0.2f;
+    [SerializeField] private float protectedCoolDown = 1f;
+    [SerializeField] private bool isProtecting = false;
     private SpriteRenderer spriteRenderer;
     public bool canMove;
     private bool isAnimating; // Flag to check if animation is already running
 
     public float moveSpeed = 5f;
 
-    
+    [Header("Level Up")] 
+    [SerializeField] private float maxLevelPoint;
+    [SerializeField] private float currentLevelPoint;
+    [SerializeField] public int currentLevel;
+    [SerializeField] private UpgradeManager upgradeManager;
 
+    
     private void Awake()
     {
         // Initialize the PlayerInput component
         playerInput = GetComponent<PlayerInput>();
         playerRb = GetComponent<Rigidbody2D>();
         entityType = EntityType.Player;
-
+        currentLevel = 1;
+        maxLevelPoint = 10f;
         // Fetch the Move and TouchMove actions from the Input Actions
         moveAction = playerInput.actions["Move"];       // Ensure "Move" action is named correctly in the Input Actions asset
         touchMoveAction = playerInput.actions["TouchMove"]; // Same for "TouchMove"
@@ -58,18 +63,20 @@ public class PlayerController : Entity
         // Bind the Dash action
         dashAction.performed += ctx => {
             Debug.Log("Dash action performed");
-            Debug.Log("Can Dash: " + canDash);
-            if (canDash) // Check if dashing is allowed before starting the dash
+            Debug.Log("Can Dash: " + canProtect);
+            if (canProtect) // Check if dashing is allowed before starting the dash
             {
-                StartCoroutine(Dash());
+                StartCoroutine(Protected());
             }
         };
-        
+        playerUI.SetHealth(MaxHealth);
+        playerUI.SetMaxLevel(maxLevelPoint);
     }
    
     void Start()
     {
-        playerUI.SetHealth(MaxHealth);
+        
+        playerUI.LevelUp(currentLevelPoint);
         canMove = false;
         spriteRenderer = GetComponent<SpriteRenderer>();
     
@@ -132,39 +139,27 @@ public class PlayerController : Entity
     }
     
     
-    private IEnumerator Dash()
+    private IEnumerator Protected()
     {
-        Debug.Log("Attempting to Dash...");
-        if (canDash) 
+        Debug.Log("Attempting to Protect");
+        if (canProtect) 
         {
-            Debug.Log("Dashing...");
-            canDash = false;
-            isDashing = true; // Set the dashing flag
+            //Debug.Log("Protecting...");
+            canProtect = false;
+            isProtecting = true; // Set the protect flag
+            
+            yield return new WaitForSeconds(protectedTime);
+            isProtecting = false;
+            
+            yield return new WaitForSeconds(protectedCoolDown);
 
-            float originalGravity = playerRb.gravityScale;
-            playerRb.gravityScale = 0;
-
-            // Use the move input to determine the dash direction
-            Vector2 dashDirection = new Vector2(moveInput.x, moveInput.y).normalized * dashingPower;
-
-            // Set the dash velocity in the direction of input
-            playerRb.velocity = dashDirection;
-
-            yield return new WaitForSeconds(dashingTime);
-
-            // Stop the player after dashing
-            playerRb.velocity = Vector2.zero; // Stop the dash
-
-            playerRb.gravityScale = originalGravity;
-            yield return new WaitForSeconds(dashingCoolDown);
-
-            canDash = true; 
-            isDashing = false; // Reset the dashing flag
-            Debug.Log("Dash complete, cooldown finished.");
+            canProtect = true; 
+            isProtecting = false; // Reset the dashing flag
+            //Debug.Log("Protected complete, cooldown finished.");
         }
         else
         {
-            Debug.Log("Cannot Dash, currently dashing or cooldown.");
+            Debug.Log("Cannot Protected, currently protecting or cooldown.");
         }
     }
     private IEnumerator AnimateFlying()
@@ -184,7 +179,7 @@ public class PlayerController : Entity
     {
         yield return new WaitForSeconds(delay); // Wait for the specified delay
         canMove = true; // Allow player movement
-        canDash = true;
+        canProtect = true;
         // Inform the GameManager that movement is now allowed
         GameManager gameManager = FindObjectOfType<GameManager>();
         if (gameManager != null)
@@ -193,14 +188,61 @@ public class PlayerController : Entity
         }
     }
 
-    public override void TakeDamage(int damage)
+    public override void TakeDamage(float damage)
     {
-        if (isDashing)
+        if (isProtecting)
         {
-            Debug.Log("Player is invincible during dash; no damage taken.");
+            //Debug.Log("Player is invincible during Protected; no damage taken.");
             return; // Prevent damage if dashing
         }
         base.TakeDamage(damage);
         playerUI.Damage(Health);
+    }
+
+    public void Leveling(float points)
+    {
+        currentLevelPoint += points * (1+((Time.deltaTime*1)/2));
+        playerUI.LevelUp(currentLevelPoint);
+        if (currentLevelPoint >= maxLevelPoint)
+        {
+            currentLevelPoint -= maxLevelPoint;
+            currentLevel += 1;
+            maxLevelPoint += maxLevelPoint/2;
+            playerUI.SetMaxLevel(maxLevelPoint);
+            playerUI.LevelUp(currentLevelPoint);
+            upgradeManager.ChooseUpgrade();
+        }
+    }
+
+    public void UnlockShootPoint()
+    {
+        if (reservePositions.Count > 0)
+        {
+            Transform reserve = reservePositions[0];
+            shootingPosition.Add(reserve);
+            reservePositions.Remove(reserve);
+        }
+    }
+
+    public void Heal()
+    {
+        if (health < maxHealth - (maxHealth/4))
+        {
+            health += MaxHealth / 4;
+            playerUI.Heal(health);
+        }
+        else
+        {
+            health = maxHealth;
+            playerUI.Heal(health);
+        }
+    }
+
+    public void UpgradeMaxHealth()
+    {
+        MaxHealth += 10 * (currentLevel * 1.5f);
+        playerUI.SetHealth(MaxHealth);
+        health += 10 * (currentLevel * 1.5f);
+        playerUI.Heal(health);
     }
 }
