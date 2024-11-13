@@ -210,7 +210,7 @@ public class PlayerController : Entity
             maxLevelPoint += maxLevelPoint/2;
             playerUI.SetMaxLevel(maxLevelPoint);
             playerUI.LevelUp(currentLevelPoint);
-            upgradeManager.ChooseUpgrade();
+            //upgradeManager.ChooseUpgrade();
         }
     }
 
