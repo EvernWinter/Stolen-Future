@@ -14,7 +14,7 @@ public class PlayerUI : MonoBehaviour
     {
         if (healthBar != null)
         {
-            Debug.Log($"Health!!!{health}");
+            //Debug.Log($"Health!!!{health}");
             healthBar.UpdateBar(health, UpdateAnim.Damage);
         }
     }
@@ -32,13 +32,13 @@ public class PlayerUI : MonoBehaviour
 
     public void SetHealth(float maxHealth)
     {
-        Debug.Log($"Max : {maxHealth}");
+        //Debug.Log($"Max : {maxHealth}");
         healthBar.Initialize(maxHealth);
     }
     
     public void SetMaxLevel(float maxLevel)
     {
-        Debug.Log($"Max level : {maxLevel}");
+        //Debug.Log($"Max level : {maxLevel}");
         levelBar.Initialize(maxLevel);
     }
     

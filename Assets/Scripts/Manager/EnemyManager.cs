@@ -72,11 +72,24 @@ public class EnemyManager : MonoBehaviour
 
     Transform GetAvailableEndpoint()
     {
-        foreach (var point in endPointStatus)
+        // Create a temporary list of endpoints
+        List<Transform> shuffledEndpoints = new List<Transform>(endPoint);
+
+        // Shuffle the list of endpoints
+        for (int i = 0; i < shuffledEndpoints.Count; i++)
         {
-            if (!point.Value) // If the endpoint is not occupied
+            Transform temp = shuffledEndpoints[i];
+            int randomIndex = Random.Range(i, shuffledEndpoints.Count);
+            shuffledEndpoints[i] = shuffledEndpoints[randomIndex];
+            shuffledEndpoints[randomIndex] = temp;
+        }
+
+        // Find the first available endpoint in the shuffled list
+        foreach (var point in shuffledEndpoints)
+        {
+            if (!endPointStatus[point]) // If the endpoint is not occupied
             {
-                return point.Key;
+                return point;
             }
         }
         return null; // No available endpoint
