@@ -62,6 +62,9 @@ public class RewardedAds : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsShowLi
         if (adUnitId.Equals(_adUnitId) && showCompletionState.Equals(UnityAdsShowCompletionState.COMPLETED))
         {
             Debug.Log("Unity Ads Rewarded Ad Completed");
+            FindObjectOfType<PlayerController>().HealMax();
+            FindObjectOfType<PlayerController>().revive = true;
+            FindObjectOfType<GameManager>().RewardedRecived();
             // Grant a reward.
         }
     }

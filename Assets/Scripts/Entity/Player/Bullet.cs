@@ -13,6 +13,8 @@ public class Bullet : MonoBehaviour
     public float bulletSpeed = 10f; // Speed of the bullet
     public float damage = 15f; // Damage the bullet deals
     public BulletType bulletType;
+    public bool isHoming = false;
+    private Transform target;
     
 
     private Rigidbody2D rb;
@@ -20,6 +22,30 @@ public class Bullet : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+    }
+
+    private void Start()
+    {
+        if (isHoming)
+        {
+            target = FindNearestEnemy();
+        }
+    }
+
+    private void Update()
+    {
+        if (isHoming)
+        {
+            if (target != null)
+            {
+                // Move towards the target (homing logic)
+                Vector3 direction = (target.position - transform.position).normalized;
+                transform.position += direction * bulletSpeed * Time.deltaTime;
+
+                // Rotate the missile to face the target
+                transform.rotation = Quaternion.LookRotation(Vector3.forward, direction);
+            }
+        }
     }
 
     // Method to set bullet direction and velocity
@@ -42,6 +68,26 @@ public class Bullet : MonoBehaviour
             OnDestroy();
         }
         
+    }
+    
+    private Transform FindNearestEnemy()
+    {
+        // Find the closest enemy
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        Transform nearestEnemy = null;
+        float minDistance = float.MaxValue;
+
+        foreach (var enemy in enemies)
+        {
+            float distance = Vector3.Distance(transform.position, enemy.transform.position);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                nearestEnemy = enemy.transform;
+            }
+        }
+
+        return nearestEnemy;
     }
 
     private void OnBecameInvisible()

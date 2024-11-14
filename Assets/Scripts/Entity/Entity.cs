@@ -25,7 +25,7 @@ public abstract class Entity : MonoBehaviour
     [SerializeField] protected float maxHealth = 100f;
     public float MaxHealth { get { return maxHealth; } set { maxHealth = value; } }
     
-    [SerializeField] private float damage = 10f;
+    [SerializeField] protected float damage = 10f;
     public float Damage { get { return damage; } set { damage = value; } }
     
     [SerializeField] protected EntityType entityType;
@@ -85,6 +85,10 @@ public abstract class Entity : MonoBehaviour
 
     protected virtual void Die()
     {
+        if (this is Enemy)
+        {
+            FindObjectOfType<GameManager>().score += 100;
+        }
         Destroy(gameObject); // Remove this entity from the scene
     }
 }

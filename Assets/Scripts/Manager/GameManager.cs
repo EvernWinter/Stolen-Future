@@ -1,7 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,7 +14,20 @@ public class GameManager : MonoBehaviour
     private bool movementAllowed = false; // Controlled by EnableMovementAfterDelay
     private bool wasMovementAllowedBeforePause; // Track movement state before pause
     [SerializeField] private GameObject pausePanel;
+    [SerializeField] private GameObject losePanel;
+    [SerializeField] private GameObject winPanel;
+    [SerializeField] private Button ReviveButton;
+    [SerializeField] private TMP_Text countdownText;
+    [SerializeField] public int score;
+    [SerializeField] private TMP_Text[] scoreText;
+    [SerializeField] private float countdownTime = 300f;
 
+    
+    void Start()
+    {
+        StartCoroutine(StartCountdown()); // Start the countdown coroutine
+    }
+    
     void Update()
     {
         // If the game is paused, don't update movement
@@ -25,6 +41,11 @@ public class GameManager : MonoBehaviour
         else if (movementAllowed)
         {
             playerController.canMove = true; // Enable movement otherwise
+        }
+
+        foreach (var text in scoreText)
+        {
+            text.text = "Score: " + score;
         }
     }
 
@@ -98,5 +119,57 @@ public class GameManager : MonoBehaviour
                 EnableMovement();  // Only enable movement if it was allowed before the pause
             }
         }
+    }
+    
+    public void MainMenuScene()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    public void ShowLosePanel()
+    {
+        PauseGame();
+        losePanel.SetActive(true);   
+        ReviveButton.interactable = true;
+    }
+    
+    public void RewardedRecived()
+    {
+        UnPauseGame();
+        losePanel.SetActive(false);   
+        ReviveButton.interactable = false;
+    }
+    
+    private IEnumerator StartCountdown()
+    {
+        float remainingTime = countdownTime;
+
+        while (remainingTime > 0)
+        {
+            if (!isPaused)
+            {
+                remainingTime -= Time.deltaTime;
+                UpdateCountdownDisplay(remainingTime);
+            }
+            yield return null;
+        }
+
+        ShowWinPanel();
+    }
+
+// Update Countdown Display
+    private void UpdateCountdownDisplay(float time)
+    {
+        int minutes = Mathf.FloorToInt(time / 60);
+        int seconds = Mathf.FloorToInt(time % 60);
+        countdownText.text = $"{minutes:00}:{seconds:00}";
+    }
+
+// Show Win Panel
+    private void ShowWinPanel()
+    {
+        countdownTime = 0;
+        PauseGame();
+        winPanel.SetActive(true);
     }
 }

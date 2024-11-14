@@ -2,7 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
+public enum ShootType
+{
+    None,
+    Shotgun,
+    HomingMissile
+}
 public class PlayerController : Entity
 { 
    private PlayerInput playerInput;
@@ -38,7 +45,25 @@ public class PlayerController : Entity
     [SerializeField] private float currentLevelPoint;
     [SerializeField] public int currentLevel;
     [SerializeField] private UpgradeManager upgradeManager;
-
+    [SerializeField] public ShootType shootType;
+    
+    [Header("Shotgun Settings")]
+    [SerializeField] private int shotgunBulletCount = 5;  // Number of bullets per shot
+    [SerializeField] private float shotgunSpreadAngle = 30f; 
+    
+    [Header("Ads")]
+    [SerializeField] private GameManager gameManager;
+    [SerializeField] public bool revive = false;
+    
+    [Header("Temp Upgrade")]
+    [SerializeField] private float upgradeDuration = 10f; 
+    [SerializeField] private float upgradeCooldown = 5f;  
+    private bool canUpgrade = true; 
+    private InputAction upgradeAction;
+    
+    [Header("Button")]
+    [SerializeField] private Button upgradeButton;
+    [SerializeField] private Button protectButton;
     
     private void Awake()
     {
@@ -48,29 +73,54 @@ public class PlayerController : Entity
         entityType = EntityType.Player;
         currentLevel = 1;
         maxLevelPoint = 10f;
+    
         // Fetch the Move and TouchMove actions from the Input Actions
         moveAction = playerInput.actions["Move"];       // Ensure "Move" action is named correctly in the Input Actions asset
         touchMoveAction = playerInput.actions["TouchMove"]; // Same for "TouchMove"
         dashAction = playerInput.actions["Dash"];
-
+        upgradeAction = playerInput.actions["Upgrade"];
+    
         // Bind the Move action for WASD input
         moveAction.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         moveAction.canceled += ctx => moveInput = Vector2.zero;
 
         // Bind the TouchMove action for mobile touch input
         touchMoveAction.performed += ctx => touchPosition = ctx.ReadValue<Vector2>();
-        
+        upgradeAction.performed += ctx => TryUpgrade();
+    
         // Bind the Dash action
         dashAction.performed += ctx => {
-            Debug.Log("Dash action performed");
-            Debug.Log("Can Dash: " + canProtect);
             if (canProtect) // Check if dashing is allowed before starting the dash
             {
                 StartCoroutine(Protected());
             }
         };
+    
         playerUI.SetHealth(MaxHealth);
         playerUI.SetMaxLevel(maxLevelPoint);
+        
+
+        upgradeButton.interactable = false;
+        protectButton.interactable = false;
+        if (upgradeButton != null)
+        {
+            // Add listener to the button to trigger upgrade when clicked
+            upgradeButton.onClick.AddListener(TryUpgrade);
+        }
+        else
+        {
+            Debug.LogWarning("Upgrade button is not assigned in the inspector!");
+        }
+
+        if (protectButton != null)
+        {
+            // Add listener to the button to trigger protection when clicked
+            protectButton.onClick.AddListener(() => StartCoroutine(Protected()));
+        }
+        else
+        {
+            Debug.LogWarning("Protect button is not assigned in the inspector!");
+        }
     }
    
     void Start()
@@ -95,6 +145,9 @@ public class PlayerController : Entity
         moveAction.Enable();
         touchMoveAction.Enable();
         dashAction.Enable();
+        upgradeAction.Enable();
+        upgradeButton.interactable = true;
+        protectButton.interactable = true;
     }
 
     private void OnDisable()
@@ -103,6 +156,9 @@ public class PlayerController : Entity
         moveAction.Disable();
         touchMoveAction.Disable();
         dashAction.Disable();
+        upgradeAction.Disable();
+        upgradeButton.interactable = false;
+        protectButton.interactable = false;
     }
 
     private void Update()
@@ -119,25 +175,92 @@ public class PlayerController : Entity
 
     private void MovePlayer()
     {
-        
-        // If on mobile (touch input)
+        // If touch input is detected, but only if not interacting with UI
         if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
         {
-            // Convert touch position to world position
-            Vector3 touchWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(touchPosition.x, touchPosition.y, Camera.main.nearClipPlane));
-            touchWorldPos.z = 0; // Ensure it's on the same plane as the player
+            // Check if touch is not on UI
+            if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            {
+                // Convert touch position to world position
+                Vector3 touchWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(touchPosition.x, touchPosition.y, Camera.main.nearClipPlane));
+                touchWorldPos.z = 0; // Ensure it's on the same plane as the player
 
-            // Move player towards touch position smoothly
-            transform.position = Vector3.Lerp(transform.position, touchWorldPos, Time.deltaTime * moveSpeed);
+                // Move player towards touch position smoothly
+                transform.position = Vector3.Lerp(transform.position, touchWorldPos, Time.deltaTime * moveSpeed);
+            }
         }
         else
         {
-            // If using WASD (PC input)
+            // If using WASD (PC input) or touch move is disabled due to UI interaction
             Vector3 movement = new Vector3(moveInput.x, moveInput.y, 0);
             transform.position += movement * (moveSpeed * 5 )* Time.deltaTime;
         }
     }
     
+    protected override void Shoot(BulletType type)
+    {
+        if (!canShoot || bulletPrefab == null || shootingPosition == null) return;
+
+        switch (shootType)
+        {
+            case ShootType.None:
+                foreach (var postion in shootingPosition)
+                {
+                    GameObject bullet = Instantiate(bulletPrefab, postion.position, postion.rotation);
+                    bullet.GetComponent<Bullet>().bulletType = type;
+                    bullet.GetComponent<Bullet>().damage = damage;
+                    Bullet bulletScript = bullet.GetComponent<Bullet>();
+                    if (bulletScript != null)
+                    {
+                        bulletScript.SetDirection(postion.up);
+                    }
+                }
+                break;
+            case ShootType.Shotgun:
+                
+                foreach (var position in shootingPosition)
+                {
+                    // Calculate starting angle to center the bullets
+                    float startAngle = -shotgunSpreadAngle / 2;
+
+                    for (int i = 0; i < shotgunBulletCount; i++)
+                    {
+                        // Calculate the angle for each bullet
+                        float angle = startAngle + (i * (shotgunSpreadAngle / (shotgunBulletCount - 1)));
+                        Quaternion rotation = Quaternion.Euler(0, 0, position.eulerAngles.z + angle);
+
+                        // Instantiate bullet with calculated spread angle
+                        GameObject bullet = Instantiate(bulletPrefab, position.position, rotation);
+                        bullet.GetComponent<Bullet>().bulletType = type;
+                        bullet.GetComponent<Bullet>().damage = 2 * (damage / shotgunBulletCount);
+                        Bullet bulletScript = bullet.GetComponent<Bullet>();
+                        if (bulletScript != null)
+                        {
+                            bulletScript.SetDirection(rotation * Vector3.up);
+                        }
+                    }
+                }
+                break;
+            case ShootType.HomingMissile:
+                foreach (var postion in shootingPosition)
+                {
+                    GameObject bullet = Instantiate(bulletPrefab, postion.position, postion.rotation);
+                    bullet.GetComponent<Bullet>().bulletType = type;
+                    bullet.GetComponent<Bullet>().isHoming = true;
+                    bullet.GetComponent<Bullet>().damage = damage/1.5f;
+                    Bullet bulletScript = bullet.GetComponent<Bullet>();
+                    if (bulletScript != null)
+                    {
+                        bulletScript.SetDirection(postion.up);
+                    }
+                }
+                break;
+                
+        }
+        
+        
+        StartCoroutine(ShootCooldown());
+    }
     
     private IEnumerator Protected()
     {
@@ -237,6 +360,12 @@ public class PlayerController : Entity
             playerUI.Heal(health);
         }
     }
+    
+    public void HealMax()
+    {
+        health = maxHealth;
+        playerUI.Heal(health);
+    }
 
     public void UpgradeMaxHealth()
     {
@@ -244,5 +373,48 @@ public class PlayerController : Entity
         playerUI.SetHealth(MaxHealth);
         health += 10 * (currentLevel * 1.5f);
         playerUI.Heal(health);
+    }
+
+    protected override void Die()
+    {
+        if (!revive)
+        {
+            gameManager.ShowLosePanel();
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+    
+    private void TryUpgrade()
+    {
+        if (canUpgrade)
+        {
+            StartCoroutine(TemporaryUpgrade());
+        }
+    }
+
+    private IEnumerator TemporaryUpgrade()
+    {
+        canUpgrade = false; // Disable further upgrades during this period
+
+        // Randomly choose between Shotgun or Homing Missile
+        shootType = (Random.Range(0, 2) == 0) ? ShootType.Shotgun : ShootType.HomingMissile;
+
+        // Log the upgrade type for debugging
+        Debug.Log("Temporary upgrade to: " + shootType);
+
+        // Wait for the upgrade duration to end
+        yield return new WaitForSeconds(upgradeDuration);
+
+        // Revert back to the default shoot type (None)
+        shootType = ShootType.None;
+        Debug.Log("Upgrade ended, reverting to None");
+
+        // Wait for cooldown before allowing another upgrade
+        yield return new WaitForSeconds(upgradeCooldown);
+
+        canUpgrade = true; // Allow the upgrade again after cooldown
     }
 }

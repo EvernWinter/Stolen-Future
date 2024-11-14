@@ -9,7 +9,8 @@ public enum UpgradeType
     Heal,
     ShootSpeed,
     ShootPoint,
-    Damage
+    Damage,
+    BulletType
 }
 public class UpgradeButton : MonoBehaviour
 {
