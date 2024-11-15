@@ -15,7 +15,7 @@ public class Bullet : MonoBehaviour
     public BulletType bulletType;
     public bool isHoming = false;
     private Transform target;
-    
+    [SerializeField] private Sprite[] sprite;
 
     private Rigidbody2D rb;
 
@@ -26,6 +26,15 @@ public class Bullet : MonoBehaviour
 
     private void Start()
     {
+        switch (bulletType)
+        {
+            case BulletType.Player:
+                GetComponent<SpriteRenderer>().sprite = sprite[0];
+                break;
+            case BulletType.Enemy:
+                GetComponent<SpriteRenderer>().sprite = sprite[1];
+                break;
+        }
         if (isHoming)
         {
             target = FindNearestEnemy();

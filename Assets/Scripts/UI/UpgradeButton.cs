@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +19,8 @@ public class UpgradeButton : MonoBehaviour
     [SerializeField] private PlayerController player;
     [SerializeField] private Image upgradeImage;
     [SerializeField] private Sprite[] upgradeSprite;
+    [SerializeField] private TMP_Text upgradeText;
+    [SerializeField] private string[] upgradeDetail;
     // Start is called before the first frame update
     void Start()
     {
@@ -38,18 +41,23 @@ public class UpgradeButton : MonoBehaviour
         {
             case UpgradeType.MaxHealth:
                 upgradeImage.sprite = upgradeSprite[0];
+                upgradeText.text = upgradeDetail[0];
                 break;
             case UpgradeType.Heal:
                 upgradeImage.sprite = upgradeSprite[1];
+                upgradeText.text = upgradeDetail[1];
                 break;
             case UpgradeType.ShootSpeed:
                 upgradeImage.sprite = upgradeSprite[2];
+                upgradeText.text = upgradeDetail[2];
                 break;
             case UpgradeType.ShootPoint:
                 upgradeImage.sprite = upgradeSprite[3];
+                upgradeText.text = upgradeDetail[3];
                 break;
             case UpgradeType.Damage:
                 upgradeImage.sprite = upgradeSprite[4];
+                upgradeText.text = upgradeDetail[4];
                 break;
         }
     }

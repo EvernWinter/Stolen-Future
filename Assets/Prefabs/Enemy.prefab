@@ -105,7 +105,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 673940331
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 4ea0291e0ecea2b4894519331ffe832c, type: 3}
   m_Color: {r: 1, g: 0.5686275, b: 0, a: 1}
@@ -133,19 +133,31 @@ MonoBehaviour:
   bulletPrefab: {fileID: 5866184308340187874, guid: 6bd30559982f4e6439c6ef4568109690, type: 3}
   shootingPosition:
   - {fileID: 577476551300111925}
-  shootingCooldown: 2.5
+  shootingCooldown: 4
   health: 100
   maxHealth: 100
   damage: 10
   entityType: 1
   target: {fileID: 0}
-  endTarget: {fileID: 0}
+  enemyType: 1
   enemyManager: {fileID: 0}
   stopMoving: 0
   playerObj: {fileID: 0}
   player: {fileID: 0}
   foundPlayer: 0
-  point: 0
+  point: 100
+  sprites:
+  - {fileID: 21300000, guid: 4ea0291e0ecea2b4894519331ffe832c, type: 3}
+  - {fileID: 21300000, guid: 8353e5fa5570af34ca1ff749d032b656, type: 3}
+  - {fileID: 21300000, guid: fcb7a328d7d9de847a14cf4db2417293, type: 3}
+  spriteRenderer: {fileID: 3522800949212419945}
+  isCharging: 0
+  chargeSpeed: 20
+  turretRotationSpeed: 90
+  turretFireInterval: 2
+  turretBurstCount: 6
+  burstCooldown: 0.3
+  turretMoveSpeed: 7
 --- !u!61 &6887726873867874985
 BoxCollider2D:
   m_ObjectHideFlags: 0

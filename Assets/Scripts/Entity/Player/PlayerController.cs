@@ -12,7 +12,7 @@ public enum ShootType
 }
 public class PlayerController : Entity
 { 
-   private PlayerInput playerInput;
+    private PlayerInput playerInput;
     private InputAction moveAction;
     private InputAction touchMoveAction;
     private InputAction dashAction;
@@ -20,6 +20,7 @@ public class PlayerController : Entity
     private Vector2 moveInput;
     private Vector2 touchPosition;
     [SerializeField] private PlayerUI playerUI;
+    [SerializeField] private Camera cam;
     
     [Header("Reserve Shooting Position")]
     [SerializeField] public List<Transform> reservePositions; 
@@ -29,7 +30,8 @@ public class PlayerController : Entity
     [SerializeField] private float animationSpeed = 0.1f;
     
     [Header("Protected")]
-    [SerializeField] private bool canProtect = true;
+    [SerializeField] private GameObject protectedObject;
+    [SerializeField] private bool canProtect;
     [SerializeField] private Rigidbody2D playerRb;
     [SerializeField] private float protectedTime = 0.2f;
     [SerializeField] private float protectedCoolDown = 1f;
@@ -58,7 +60,7 @@ public class PlayerController : Entity
     [Header("Temp Upgrade")]
     [SerializeField] private float upgradeDuration = 10f; 
     [SerializeField] private float upgradeCooldown = 5f;  
-    private bool canUpgrade = true; 
+    [SerializeField] private bool canUpgrade; 
     private InputAction upgradeAction;
     
     [Header("Button")]
@@ -89,11 +91,9 @@ public class PlayerController : Entity
         upgradeAction.performed += ctx => TryUpgrade();
     
         // Bind the Dash action
-        dashAction.performed += ctx => {
-            if (canProtect) // Check if dashing is allowed before starting the dash
-            {
-                StartCoroutine(Protected());
-            }
+        dashAction.performed += ctx =>
+        {
+            TryProtected();
         };
     
         playerUI.SetHealth(MaxHealth);
@@ -105,7 +105,7 @@ public class PlayerController : Entity
         if (upgradeButton != null)
         {
             // Add listener to the button to trigger upgrade when clicked
-            upgradeButton.onClick.AddListener(TryUpgrade);
+            upgradeButton.onClick.AddListener(() => StartCoroutine(TemporaryUpgrade()));
         }
         else
         {
@@ -125,7 +125,6 @@ public class PlayerController : Entity
    
     void Start()
     {
-        
         playerUI.LevelUp(currentLevelPoint);
         canMove = false;
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -141,13 +140,17 @@ public class PlayerController : Entity
 
     private void OnEnable()
     {
-        // Enable the input actions
+        // Enable the input actions only if movement is allowed
         moveAction.Enable();
         touchMoveAction.Enable();
         dashAction.Enable();
         upgradeAction.Enable();
-        upgradeButton.interactable = true;
-        protectButton.interactable = true;
+
+        // Only enable buttons and protection if movement is allowed
+        upgradeButton.interactable = canMove;
+        protectButton.interactable = canMove;
+        canProtect = canMove;
+        canUpgrade = canMove;
     }
 
     private void OnDisable()
@@ -157,8 +160,12 @@ public class PlayerController : Entity
         touchMoveAction.Disable();
         dashAction.Disable();
         upgradeAction.Disable();
+
+        // Disable button interactions
         upgradeButton.interactable = false;
         protectButton.interactable = false;
+        canProtect = false;
+        canUpgrade = false;
     }
 
     private void Update()
@@ -174,6 +181,19 @@ public class PlayerController : Entity
     }
 
     private void MovePlayer()
+{
+    // Get the screen's bounds in world space
+    float cameraHalfWidth = cam.orthographicSize * cam.aspect;
+    float cameraHalfHeight = cam.orthographicSize;
+
+    // Calculate the camera bounds
+    float minX = cam.transform.position.x - cameraHalfWidth;
+    float maxX = cam.transform.position.x + cameraHalfWidth;
+    float minY = cam.transform.position.y - cameraHalfHeight;
+    float maxY = cam.transform.position.y + cameraHalfHeight;
+
+    // Handle movement for both PC and mobile.
+    if (canMove)
     {
         // If touch input is detected, but only if not interacting with UI
         if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
@@ -185,17 +205,28 @@ public class PlayerController : Entity
                 Vector3 touchWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(touchPosition.x, touchPosition.y, Camera.main.nearClipPlane));
                 touchWorldPos.z = 0; // Ensure it's on the same plane as the player
 
+                // Clamp the touch position to the camera bounds
+                touchWorldPos.x = Mathf.Clamp(touchWorldPos.x, minX, maxX);
+                touchWorldPos.y = Mathf.Clamp(touchWorldPos.y, minY, maxY);
+
                 // Move player towards touch position smoothly
-                transform.position = Vector3.Lerp(transform.position, touchWorldPos, Time.deltaTime * moveSpeed);
+                transform.position = Vector3.MoveTowards(transform.position, touchWorldPos, moveSpeed * Time.deltaTime);
             }
         }
         else
         {
             // If using WASD (PC input) or touch move is disabled due to UI interaction
             Vector3 movement = new Vector3(moveInput.x, moveInput.y, 0);
-            transform.position += movement * (moveSpeed * 5 )* Time.deltaTime;
+            Vector3 newPosition = transform.position + movement * (moveSpeed * 5) * Time.deltaTime;
+
+            // Clamp the new position to the camera bounds
+            newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
+            newPosition.y = Mathf.Clamp(newPosition.y, minY, maxY);
+
+            transform.position = newPosition;
         }
     }
+}
     
     protected override void Shoot(BulletType type)
     {
@@ -270,10 +301,10 @@ public class PlayerController : Entity
             //Debug.Log("Protecting...");
             canProtect = false;
             isProtecting = true; // Set the protect flag
-            
+            protectedObject.SetActive(true);
             yield return new WaitForSeconds(protectedTime);
             isProtecting = false;
-            
+            protectedObject.SetActive(false);
             yield return new WaitForSeconds(protectedCoolDown);
 
             canProtect = true; 
@@ -284,6 +315,7 @@ public class PlayerController : Entity
         {
             Debug.Log("Cannot Protected, currently protecting or cooldown.");
         }
+        
     }
     private IEnumerator AnimateFlying()
     {
@@ -303,6 +335,12 @@ public class PlayerController : Entity
         yield return new WaitForSeconds(delay); // Wait for the specified delay
         canMove = true; // Allow player movement
         canProtect = true;
+        canUpgrade = true;
+    
+        // Update UI buttons now that movement is allowed
+        upgradeButton.interactable = true;
+        protectButton.interactable = true;
+
         // Inform the GameManager that movement is now allowed
         GameManager gameManager = FindObjectOfType<GameManager>();
         if (gameManager != null)
@@ -384,37 +422,49 @@ public class PlayerController : Entity
         else
         {
             Destroy(gameObject);
+            gameManager.ShowLosePanel();
         }
     }
     
     private void TryUpgrade()
     {
-        if (canUpgrade)
+        if (canUpgrade && canMove && upgradeButton.interactable) // Add check for canMove
         {
             StartCoroutine(TemporaryUpgrade());
         }
     }
 
+    private void TryProtected()
+    {
+        if (canProtect && canMove && protectButton.interactable) // Add check for canMove
+        {
+            StartCoroutine(Protected());
+        }
+    }
+
     private IEnumerator TemporaryUpgrade()
     {
-        canUpgrade = false; // Disable further upgrades during this period
+        if (canUpgrade)
+        {
+            canUpgrade = false; // Disable further upgrades during this period
 
-        // Randomly choose between Shotgun or Homing Missile
-        shootType = (Random.Range(0, 2) == 0) ? ShootType.Shotgun : ShootType.HomingMissile;
+            // Randomly choose between Shotgun or Homing Missile
+            shootType = (Random.Range(0, 2) == 0) ? ShootType.Shotgun : ShootType.HomingMissile;
 
-        // Log the upgrade type for debugging
-        Debug.Log("Temporary upgrade to: " + shootType);
+            // Log the upgrade type for debugging
+            Debug.Log("Temporary upgrade to: " + shootType);
 
-        // Wait for the upgrade duration to end
-        yield return new WaitForSeconds(upgradeDuration);
+            // Wait for the upgrade duration to end
+            yield return new WaitForSeconds(upgradeDuration);
 
-        // Revert back to the default shoot type (None)
-        shootType = ShootType.None;
-        Debug.Log("Upgrade ended, reverting to None");
+            // Revert back to the default shoot type (None)
+            shootType = ShootType.None;
+            Debug.Log("Upgrade ended, reverting to None");
 
-        // Wait for cooldown before allowing another upgrade
-        yield return new WaitForSeconds(upgradeCooldown);
+            // Wait for cooldown before allowing another upgrade
+            yield return new WaitForSeconds(upgradeCooldown);
 
-        canUpgrade = true; // Allow the upgrade again after cooldown
+            canUpgrade = true; // Allow the upgrade again after cooldown
+        }
     }
 }

@@ -87,8 +87,10 @@ public abstract class Entity : MonoBehaviour
     {
         if (this is Enemy)
         {
-            FindObjectOfType<GameManager>().score += 100;
+            FindObjectOfType<GameManager>().score += (int)GetComponent<Enemy>().point;
         }
         Destroy(gameObject); // Remove this entity from the scene
     }
+    
+    
 }

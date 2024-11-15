@@ -123,14 +123,23 @@ public class GameManager : MonoBehaviour
     
     public void MainMenuScene()
     {
+        Time.timeScale = 1;
         SceneManager.LoadScene("MainMenu");
     }
 
     public void ShowLosePanel()
     {
         PauseGame();
-        losePanel.SetActive(true);   
-        ReviveButton.interactable = true;
+        losePanel.SetActive(true);
+        if (!playerController.revive)
+        {
+            ReviveButton.gameObject.SetActive(false);
+        }
+        else
+        {
+            ReviveButton.gameObject.SetActive(true);
+            ReviveButton.interactable = true;
+        }
     }
     
     public void RewardedRecived()

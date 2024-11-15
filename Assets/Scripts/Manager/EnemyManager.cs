@@ -6,20 +6,28 @@ public class EnemyManager : MonoBehaviour
 {
     [SerializeField] private List<GameObject> enemyList = new List<GameObject>();
     [SerializeField] private GameObject enemyPrefab;
-    [SerializeField] private float spawnInterval; // Time interval for spawning enemies
+    [SerializeField] private float spawnInterval;
+    [SerializeField] private float spawnIntervalMax; // Time interval for spawning enemies
+    [SerializeField] private float spawnIntervalMin;
     [SerializeField] private float spawnTimer = 0.0f; // Timer for spawning enemies
-    [SerializeField] private Transform spawnPoint;
+    [SerializeField] private Transform[] spawnPoint;
     [SerializeField] private Transform[] endPoint;
     [SerializeField] private GameObject player;
-
+    [SerializeField] private Transform[] turretStationPoints; // Array for multiple turret station points
+    private Dictionary<Transform, bool> turretStationStatus;
     private Dictionary<Transform, bool> endPointStatus;
 
     void Start()
     {
         endPointStatus = new Dictionary<Transform, bool>();
+        turretStationStatus = new Dictionary<Transform, bool>();
         foreach (var point in endPoint)
         {
             endPointStatus[point] = false; // Initially, all endpoints are unoccupied
+        }
+        foreach (var turretPoint in turretStationPoints)
+        {
+            turretStationStatus[turretPoint] = false;
         }
     }
 
@@ -28,45 +36,79 @@ public class EnemyManager : MonoBehaviour
         SpawnEnemies();
     }
 
+       
     private void SpawnEnemies()
     {
         // Increment the spawn timer
         spawnTimer += Time.deltaTime;
 
         // Check if we can spawn a new enemy
-        if (spawnTimer >= spawnInterval)
+        if (spawnTimer >= Random.Range(spawnIntervalMin, spawnIntervalMax))
         {
-            ReleaseEndpoints();
-            Transform targetEndpoint = GetAvailableEndpoint();
-            if (targetEndpoint != null) // Only spawn if there's an available endpoint
+            bool hasSpawned = false;
+
+            // Loop through all spawn points
+            foreach (var point in spawnPoint)
             {
-                GameObject enemy = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
-                
-                Enemy enemyMovement = enemy.GetComponent<Enemy>();
-                if (enemyMovement != null)
+                // Release any endpoints based on your game logic (e.g., enemies reaching their destination)
+                ReleaseEndpoints();
+
+                // Get an available endpoint for the enemy to target (for non-turret enemies)
+                Transform targetEndpoint = GetAvailableEndpoint();
+                Transform turretStation = GetAvailableTurretStation();
+                // Check if we can spawn either a turret or a non-turret enemy
+                if (targetEndpoint != null || turretStation != null)
                 {
-                    enemyMovement.SetTarget(targetEndpoint, this);
+                    GameObject enemy = Instantiate(enemyPrefab, point.position, Quaternion.identity);
+                    enemy.GetComponent<Enemy>().MaxHealth += 50 + (player.GetComponent<PlayerController>().currentLevel * 15f);
+                    Enemy enemyComponent = enemy.GetComponent<Enemy>();
+                    if (targetEndpoint != null)
+                    {
+                        enemyComponent.enemyType = (EnemyType)Random.Range(0, 2);  // Randomly assign enemy type
+                        
+                        if (enemyComponent != null && targetEndpoint != null)
+                        {
+                            enemyComponent.SetTarget(targetEndpoint, this);
+                        }
+                    }
+                    else if (turretStation != null)
+                    {
+                        enemyComponent.enemyType = EnemyType.Turret;  // Fixed assign enemy type
+                        if (turretStation != null)
+                        {
+                            enemy.transform.position = turretStation.position; // Place turret at the special station
+                            turretStationStatus[turretStation] = true; // Mark turret station as occupied
+                            enemyComponent.SetTarget(turretStation, this); // Turrets do not need to move towards an endpoint
+                            Debug.Log($"Turret spawned at {turretStation.name}");
+                        }
+                        else
+                        {
+                            Debug.Log("No available turret station. Skipping turret spawn.");
+                            continue; // Skip spawning turret if no station is available
+                        }
+                    }
+                    // Add enemy to the list and mark the endpoint as occupied (if it's not a turret)
+                    enemyList.Add(enemy);
+                    if (enemyComponent.enemyType != EnemyType.Turret && targetEndpoint != null)
+                    {
+                        endPointStatus[targetEndpoint] = true;
+                    }
+
+                    Debug.Log($"Enemy spawned at {point.name} (Target: {targetEndpoint?.name ?? "None"})");
+
+                    hasSpawned = true;
                 }
-
-                enemyList.Add(enemy);
-                endPointStatus[targetEndpoint] = true; // Mark endpoint as occupied
-                Debug.Log($"Enemy spawned at {targetEndpoint.name}"); // Debug message for spawned enemy
-
-                spawnTimer = 0.0f; // Reset spawn timer after spawning an enemy
+                else
+                {
+                    Debug.Log("No available endpoints or turret stations to spawn an enemy.");
+                }
             }
-            else
+
+            // Reset spawn timer only if at least one enemy was spawned
+            if (hasSpawned)
             {
-                Debug.Log("No available endpoints to spawn an enemy."); // Debug message when no endpoints are available
                 spawnTimer = 0.0f;
             }
-        }
-        else
-        {
-            // Debug the status of all endpoints
-            /*foreach (var point in endPointStatus)
-            {
-                Debug.Log($"{point.Key.name} is {(point.Value ? "occupied" : "available")}");
-            }*/
         }
     }
 
@@ -103,13 +145,39 @@ public class EnemyManager : MonoBehaviour
 
     private void ReleaseEndpoints()
     {
-        foreach (var noEnemy in enemyList)
+        // Loop through the enemy list and clean up any enemies that are destroyed or no longer exist
+        for (int i = enemyList.Count - 1; i >= 0; i--)
         {
-            if (noEnemy == null)
+            if (enemyList[i] == null)  // Check for any null references in the list
             {
-                enemyList.Remove(noEnemy);
-                
+                enemyList.RemoveAt(i);  // Remove the null reference
             }
         }
+    }
+    
+    Transform GetAvailableTurretStation()
+    {
+        // Find the first available turret station in the dictionary
+        foreach (var station in turretStationStatus)
+        {
+            if (!station.Value) // If the turret station is not occupied
+            {
+                return station.Key;
+            }
+        }
+        return null; // No available turret station
+    }
+
+    public void ReleaseTurretStation(Transform turretStation, GameObject enemy)
+    {
+        if (turretStation != null)
+        {
+            turretStationStatus[turretStation] = false; // Mark the turret station as available
+        }
+        else
+        {
+            Debug.LogWarning("Attempted to release a null turret station.");
+        }
+        enemyList.Remove(enemy); // Remove from tracking list
     }
 }
