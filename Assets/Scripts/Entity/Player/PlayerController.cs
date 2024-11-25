@@ -56,7 +56,7 @@ public class PlayerController : Entity
     [Header("Ads")]
     [SerializeField] private GameManager gameManager;
     [SerializeField] public bool revive = false;
-    
+    private int dead;
     [Header("Temp Upgrade")]
     [SerializeField] private float upgradeDuration = 10f; 
     [SerializeField] private float upgradeCooldown = 5f;  
@@ -415,6 +415,8 @@ public class PlayerController : Entity
 
     protected override void Die()
     {
+        dead++;
+        AnalyticManager.instance.Dead(dead);
         if (!revive)
         {
             gameManager.ShowLosePanel();

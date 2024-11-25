@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] public int score;
     [SerializeField] private TMP_Text[] scoreText;
     [SerializeField] private float countdownTime = 300f;
+    [SerializeField] private float surviveTime = 0f;
 
     
     void Start()
@@ -131,7 +132,7 @@ public class GameManager : MonoBehaviour
     {
         PauseGame();
         losePanel.SetActive(true);
-        if (!playerController.revive)
+        if (playerController.revive)
         {
             ReviveButton.gameObject.SetActive(false);
         }
@@ -140,6 +141,7 @@ public class GameManager : MonoBehaviour
             ReviveButton.gameObject.SetActive(true);
             ReviveButton.interactable = true;
         }
+        AnalyticManager.instance.Survive((int)surviveTime);
     }
     
     public void RewardedRecived()
@@ -158,11 +160,13 @@ public class GameManager : MonoBehaviour
             if (!isPaused)
             {
                 remainingTime -= Time.deltaTime;
+                surviveTime += Time.deltaTime;
                 UpdateCountdownDisplay(remainingTime);
             }
             yield return null;
+            
         }
-
+        AnalyticManager.instance.Score(score);
         ShowWinPanel();
     }
 
