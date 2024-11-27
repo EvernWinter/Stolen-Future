@@ -20,7 +20,7 @@ public class BGMManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Preserve the entire GameObject
+            
         }
         else
         {
