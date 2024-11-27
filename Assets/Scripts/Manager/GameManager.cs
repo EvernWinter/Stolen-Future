@@ -27,6 +27,8 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         StartCoroutine(StartCountdown()); // Start the countdown coroutine
+        BGMManager.Instance.PlayInGameBGM();
+        BGMManager.Instance.SetLoop(true);
     }
     
     void Update()
@@ -103,6 +105,7 @@ public class GameManager : MonoBehaviour
             Time.timeScale = 0;   // Freeze the game time
             isPaused = true;      // Set paused state to true
             wasMovementAllowedBeforePause = movementAllowed; // Store whether movement was allowed
+            BGMManager.Instance.PauseMusic();
             DisableMovement();    // Disable movement when paused
             
         }
@@ -114,6 +117,7 @@ public class GameManager : MonoBehaviour
         {
             Time.timeScale = 1;   // Resume the game time
             isPaused = false;     // Set paused state to false
+            BGMManager.Instance.ResumeMusic();
             // Restore the previous movement state
             if (wasMovementAllowedBeforePause)
             {
