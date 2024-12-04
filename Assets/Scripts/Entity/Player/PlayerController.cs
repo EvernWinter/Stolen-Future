@@ -199,19 +199,18 @@ public class PlayerController : Entity
         if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
         {
             // Check if touch is not on UI
-            if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-            {
-                // Convert touch position to world position
-                Vector3 touchWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(touchPosition.x, touchPosition.y, Camera.main.nearClipPlane));
-                touchWorldPos.z = 0; // Ensure it's on the same plane as the player
+            
+            // Convert touch position to world position
+            Vector3 touchWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(touchPosition.x, touchPosition.y, Camera.main.nearClipPlane));
+            touchWorldPos.z = 0; // Ensure it's on the same plane as the player
 
-                // Clamp the touch position to the camera bounds
-                touchWorldPos.x = Mathf.Clamp(touchWorldPos.x, minX, maxX);
-                touchWorldPos.y = Mathf.Clamp(touchWorldPos.y, minY, maxY);
+            // Clamp the touch position to the camera bounds
+            touchWorldPos.x = Mathf.Clamp(touchWorldPos.x, minX, maxX);
+            touchWorldPos.y = Mathf.Clamp(touchWorldPos.y, minY, maxY);
 
-                // Move player towards touch position smoothly
-                transform.position = Vector3.MoveTowards(transform.position, touchWorldPos, moveSpeed * Time.deltaTime);
-            }
+            // Move player towards touch position smoothly
+            transform.position = Vector3.MoveTowards(transform.position, touchWorldPos, moveSpeed * 6 * Time.deltaTime);
+            
         }
         else
         {
